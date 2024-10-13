@@ -45,13 +45,14 @@ export default async function handler(req: NextApiRequest
 }
 
 const fetchTimeLapFromTheText = async (message: string) => {
+  const date = new Date();
     const completion: any = await openAi.beta.chat.completions.parse({
       model: 'gpt-4o-2024-08-06',
       messages: [
             { role: "system", content: "You are a helpful assistant." },
             {
                 role: "user",
-                content: `give me the date range that is required to schedule the events in this message: ${message} and give me output in the form of json having structure {startDate, endDate} in ISOString format`,
+                content: `According to this message: "${message}" give me the time frame after ${date} which will be feasible for the user  `,
             },
         ],
         response_format: zodResponseFormat(TimeFormat, 'time_format')
