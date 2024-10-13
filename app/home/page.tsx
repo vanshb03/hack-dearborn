@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react"
 import { format, startOfWeek, addDays, isSameDay, parseISO } from "date-fns"
 import { Calendar, ChevronLeft, ChevronRight, Plus, User } from "lucide-react"
