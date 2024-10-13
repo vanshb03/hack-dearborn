@@ -1,6 +1,8 @@
 'use client';
 
-import { Button } from "@nextui-org/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import googleIcon from '../assets/google.svg';
 import Logo from '../assets/logoWOBack.png';
@@ -8,7 +10,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/supabaseClient";
 import { UserResponse } from "@supabase/supabase-js";
 
-const Login = () => {
+export default function Login() {
   const [user, setUser] = useState<UserResponse>();
   const [error, setError] = useState('');
 
@@ -32,33 +34,38 @@ const Login = () => {
   }, []);
   console.log(user, error)
 
-  const image = () => <Image 
-      src={googleIcon}
-        alt="google icon" 
-        width={20} 
-        height={20} 
-      />
-  const logo = () => <Image 
-      src={Logo}
-        alt="Logo" 
-        width={100} 
-        height={100} 
-      />
   return (
-    <div className="flex justify-center items-center min-h-screen bg-white">
-      <div className="bg-white shadow-lg border border-gray-200 h-[600px] w-[600px] flex justify-center items-center rounded-lg m-5 flex-col gap-5">
-        <h1 className="text-black">
-          Welcome to AiSchedular.ai
-        </h1>
-        {logo()}
-        <form method="POST" action={'api/auth'}>
-          <Button type="submit" className="bg-black text-white" endContent={image()}>
-            Login with Google
-          </Button>
-        </form>
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12 dark:bg-foreground dark:text-background">
+      <div className="mx-auto max-w-md space-y-6">
+        <div className="space-y-2 text-center items-center ">
+          <Image 
+            src={Logo}
+            alt="Logo" 
+            width={100} 
+            height={100}
+          />
+          <h1 className="text-3xl font-bold">Login</h1>
+          <p className="text-muted-foreground dark:text-card-foreground">
+            Enter your email and password to access your account.
+          </p>
+        </div>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <form method="post" action="api/auth">
+              <Button variant="outline" type="submit" className="w-full">
+                <Image 
+                  src={googleIcon}
+                  alt="google icon" 
+                  width={20} 
+                  height={20} 
+                />
+                <span className="ml-2">Login with Google</span>
+            </Button>
+            </form>
+          </div>
+         </div> 
+        </div>
+        {error && <p className="text-red-500 text-center">{error}</p>}
       </div>
-    </div>
-  )
+  );
 }
-
-export default Login;
