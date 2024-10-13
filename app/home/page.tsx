@@ -1,6 +1,6 @@
 import { Header } from "@/components/header"
 
-export const HomePage = () => {
+export default function HomePage() {
   return (
     <>
       <Header />
