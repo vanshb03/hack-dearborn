@@ -1,36 +1,43 @@
-import { google, calendar_v3 } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
+import { NextApiRequest, NextApiResponse } from 'next';
+import axios from 'axios';
 
-async function fetchGoogleCalendarEvents(
-  auth: OAuth2Client,
-  calendarId: string = 'primary'
-): Promise<calendar_v3.Schema$Event[]> {
-  const calendar = google.calendar({ version: 'v3', auth });
-  
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
+  }
+
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ message: 'Token is required' });
+  }
+
   try {
-    const response = await calendar.events.list({
-      calendarId: calendarId,
-      timeMin: (new Date()).toISOString(),
-      maxResults: 2500,
-      singleEvents: true,
-      orderBy: 'startTime',
-    });
+    const response = await axios.get(
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+      {
+        params: {
+          timeMin: new Date().toISOString(),
+          maxResults: 2500,
+          singleEvents: true,
+          orderBy: 'startTime',
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    const events = response.data.items;
-    
-    if (!events || events.length === 0) {
-      console.log('No upcoming events found.');
-      return [];
-    }
-    
-    return events;
+    const events = response.data.items.map((event: any) => ({
+      id: event.id,
+      title: event.summary,
+      start: event.start.dateTime || event.start.date,
+      end: event.end.dateTime || event.end.date,
+    }));
+
+    res.status(200).json({ events });
   } catch (error) {
-    console.error('Error fetching calendar events:', error);
-    throw error;
+    console.error('Error fetching events:', error);
+    res.status(500).json({ message: 'Error fetching events' });
   }
 }
-
-// Usage example
-// const auth = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-// auth.setCredentials({ access_token: 'YOUR_ACCESS_TOKEN' });
-// const events = await fetchGoogleCalendarEvents(auth);

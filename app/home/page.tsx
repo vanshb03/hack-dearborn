@@ -1,238 +1,205 @@
-"use client";
+import { useState, useEffect } from "react"
+import { format, startOfWeek, addDays, isSameDay, parseISO } from "date-fns"
+import { Calendar, ChevronLeft, ChevronRight, Plus, User } from "lucide-react"
+import axios from 'axios'
+import { useAuth } from "../hooks/useAuth"  // Adjust the import path as necessary
 
-import React, { useEffect, useRef } from 'react';
-import Link from "next/link";
-import { motion } from 'framer-motion';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function HomePage() {
-  const titleRef = useRef(null);
-  const subtitleRef = useRef(null);
+export default function UserDashboard() {
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [events, setEvents] = useState([])
+  const { user } = useAuth();  // Get the authenticated user
+
+  // Function to fetch events from the API
+  const fetchEvents = async (token) => {
+    try {
+      const response = await axios.post('/api/getEvents', { token });
+      console.log('Fetched events:', response.data.events);
+      return response.data.events;
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      return [];
+    }
+  };
+
+  // Helper function to safely parse dates
+  const safeParseDate = (dateString) => {
+    if (!dateString) return null;
+    try {
+      return parseISO(dateString);
+    } catch (error) {
+      console.error('Error parsing date:', dateString, error);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    const titleObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
+    const fetchEventsData = async () => {
+      console.log('All localStorage keys:', Object.keys(localStorage));
+
+      const authData = localStorage.getItem('sb-hftxskqhefzqnwyiqplt-auth-token');
+      console.log('Auth data:', authData);
+
+      if (authData) {
+        try {
+          const parsedAuthData = JSON.parse(authData);
+          console.log('Parsed auth data:', parsedAuthData);
+          
+          const providerToken = parsedAuthData.provider_token;
+          console.log('Provider token:', providerToken);
+
+          if (providerToken) {
+            const fetchedEvents = await fetchEvents(providerToken);
+            const formattedEvents = fetchedEvents.map((event, index) => {
+              const startDate = safeParseDate(event.start);
+              return {
+                id: event.id || `event-${index}`,
+                title: event.title || event.summary || 'Untitled Event',
+                date: startDate,
+                color: `bg-${['blue', 'red', 'green', 'yellow', 'purple'][index % 5]}-500`,
+              };
+            }).filter(event => event.date !== null);  // Remove events with invalid dates
+            console.log('Formatted events:', formattedEvents);
+            setEvents(formattedEvents);
+          } else {
+            console.log('No provider token found in parsed auth data');
+          }
+        } catch (error) {
+          console.error('Error parsing auth data:', error);
         }
-      });
-    });3
-
-    const subtitleObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
-        }
-      });
-    });
-
-    if (titleRef.current) {
-      titleObserver.observe(titleRef.current);
-    }
-    if (subtitleRef.current) {
-      subtitleObserver.observe(subtitleRef.current);
-    }
-
-    return () => {
-      if (titleRef.current) {
-        titleObserver.unobserve(titleRef.current);
-      }
-      if (subtitleRef.current) {
-        subtitleObserver.unobserve(subtitleRef.current);
+      } else {
+        console.log('No auth data found in localStorage');
       }
     };
+
+    fetchEventsData();
   }, []);
 
-  return (
-    <div className="flex flex-col min-h-[100dvh] bg-background text-foreground">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b border-border">
-        <Link href="#" className="flex items-center justify-center" prefetch={false}>
-          <CalendarIcon className="h-6 w-6 text-primary" />
-          <span className="sr-only">aischeduler</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-            <Link href="#features" className="text-sm font-medium hover:text-primary py-2" prefetch={false}>
-            Features
-            </Link>
-          <Link href="#" className="text-sm font-medium hover:text-primary py-2" prefetch={false}>
-            Pricing
-          </Link>
-          <Link href="#" className="text-sm font-medium hover:text-primary py-2" prefetch={false}>
-            About
-          </Link>
-          <Link href="#" className="text-sm font-medium hover:text-primary py-2" prefetch={false}>
-            Contact
-          </Link>
-          <Link
-                  href="#"
-                  className="text-sm font-medium hover:text-primary bg-primary text-primary-foreground text-md rounded px-4 py-2 shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  prefetch={false}
-                >
-                  Sign Up
-            </Link>
-        </nav>
-      </header>
-      <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-secondary">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <motion.h1 
-                ref={titleRef}
-                className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-primary opacity-0 translate-y-10"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                Reclaim Your Time with aischeduler
-              </motion.h1>
-              <motion.p 
-                ref={subtitleRef}
-                className="max-w-[600px] text-secondary-foreground md:text-xl opacity-0"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                Automatically block off 15-30 minute periods for tasks and to-do items, so you can focus on what
-                matters most.
-              </motion.p>
-              <motion.div 
-                className="flex flex-col gap-2 min-[400px]:flex-row mt-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-              >
-                <Link
-                  href="#"
-                  className="inline-flex h-10 items-center justify-center rounded-md bg-primary text-primary-foreground px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  prefetch={false}
-                >
-                  Sign Up
-                </Link>
-                <Link
-                  href="#"
-                  className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  prefetch={false}
-                >
-                  Learn More
-                </Link>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-        
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-background">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm text-secondary-foreground">Key Features</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-primary">
-                  Boost Your Productivity with aischeduler
-                </h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  aischeduler integrates with your Google Calendar to automatically block off time for your tasks and
-                  to-do items, so you can focus on what&apos;s important.
-                </p>
-              </div>
-            </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-              <div className="flex flex-col justify-center space-y-4">
-                <ul className="grid gap-6">
-                  <li>
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold text-primary">Automatic Time Blocking</h3>
-                      <p className="text-muted-foreground">
-                        aischeduler integrates with your Google Calendar to automatically block off 15-30 minute periods
-                        for your tasks and to-do items.
-                      </p>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold text-primary">Increased Productivity</h3>
-                      <p className="text-muted-foreground">
-                        By automatically blocking off time for your tasks, you&apos;ll be able to focus and get more done.
-                      </p>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold text-primary">Seamless Integration</h3>
-                      <p className="text-muted-foreground">
-                        aischeduler integrates directly with your Google Calendar, so you can manage your time without
-                        switching between apps.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div className="aspect-video overflow-hidden rounded-xl bg-muted"></div>
-            </div>
-          </div>
-        </section>
-        
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-secondary">
-          <div className="container grid items-center gap-6 px-4 md:px-6 lg:grid-cols-2 lg:gap-10">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-primary">
-                Take Control of Your Time with aischeduler
-              </h2>
-              <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                aischeduler helps you stay focused and productive by automatically blocking off time for your tasks and
-                to-do items.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 min-[400px]:flex-row lg:justify-end">
-              <Link
-                href="#"
-                className="inline-flex h-10 items-center justify-center rounded-md bg-primary text-primary-foreground px-8 text-sm font-medium shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                prefetch={false}
-              >
-                Sign Up
-              </Link>
-              <Link
-                href="#"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                prefetch={false}
-              >
-                Learn More
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">&copy; 2024 aischeduler. All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link href="#" className="text-xs hover:text-primary" prefetch={false}>
-            Terms of Service
-          </Link>
-          <Link href="#" className="text-xs hover:text-primary" prefetch={false}>
-            Privacy
-          </Link>
-        </nav>
-      </footer>
-    </div>
-  )
-}
+  const startDate = startOfWeek(currentDate)
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i))
 
-function CalendarIcon(props: any) {
+  const addEvent = (newEvent) => {
+    setEvents([...events, { ...newEvent, id: `event-${events.length + 1}` }])
+  }
+
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M8 2v4" />
-      <path d="M16 2v4" />
-      <rect width="18" height="18" x="3" y="4" rx="2" />
-      <path d="M3 10h18" />
-    </svg>
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white p-6 shadow-md">
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+            <User className="w-6 h-6 text-gray-600" />
+          </div>
+          <div>
+            <h2 className="font-semibold">{user ? user.name : 'Loading...'}</h2>
+            <p className="text-sm text-gray-500">{user ? user.email : 'Loading...'}</p>
+          </div>
+        </div>
+        <nav>
+          <Button variant="ghost" className="w-full justify-start mb-2">
+            <Calendar className="mr-2 h-4 w-4" /> Calendar
+          </Button>
+          {/* Add more navigation items here */}
+        </nav>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 p-6 overflow-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold">Your Calendar</h1>
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -7))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="font-medium">
+              {format(startDate, "MMMM d, yyyy")} - {format(addDays(startDate, 6), "MMMM d, yyyy")}
+            </span>
+            <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 7))}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add Event
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Event</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const formData = new FormData(e.target)
+                  const newEvent = {
+                    title: formData.get("title"),
+                    date: new Date(formData.get("date")),
+                    color: formData.get("color"),
+                  }
+                  addEvent(newEvent)
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <Label htmlFor="title">Event Title</Label>
+                  <Input id="title" name="title" required />
+                </div>
+                <div>
+                  <Label htmlFor="date">Date and Time</Label>
+                  <Input id="date" name="date" type="datetime-local" required />
+                </div>
+                <div>
+                  <Label htmlFor="color">Color</Label>
+                  <Select name="color" defaultValue="bg-blue-500">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bg-blue-500">Blue</SelectItem>
+                      <SelectItem value="bg-red-500">Red</SelectItem>
+                      <SelectItem value="bg-green-500">Green</SelectItem>
+                      <SelectItem value="bg-yellow-500">Yellow</SelectItem>
+                      <SelectItem value="bg-purple-500">Purple</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button type="submit">Add Event</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Weekly Calendar */}
+        <div className="grid grid-cols-7 gap-4">
+          {weekDays.map((day) => (
+            <Card key={day.toISOString()} className="h-[calc(100vh-12rem)] overflow-hidden">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2">{format(day, "EEE d")}</h3>
+                <div className="space-y-2">
+                  {events
+                    .filter((event) => event.date && isSameDay(event.date, day))
+                    .map((event) => (
+                      <div
+                        key={event.id}
+                        className={`${event.color} text-white p-2 rounded-md text-sm`}
+                      >
+                        <p className="font-semibold">{event.title}</p>
+                        <p>{event.date ? format(event.date, "h:mm a") : 'No time specified'}</p>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </main>
+    </div>
   )
 }

@@ -5,7 +5,6 @@ import { useAuth } from "./hooks/useAuth";
 import HomePage from './home/page';
 
 export default function Home() {
-
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -15,9 +14,7 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  if (loading) return <p>Loading...</p>; // Show loading state while checking auth
+  if (loading) return <p>Loading...</p>;
 
-  return (
-   <HomePage />
-  );
+  return <HomePage />;
 }
