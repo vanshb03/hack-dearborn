@@ -89,20 +89,20 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-white p-6 shadow-md">
+      <aside className="w-64 bg-card p-6 shadow-md">
         <div className="flex items-center space-x-4 mb-6">
-          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-            <User className="w-6 h-6 text-gray-600" />
+          <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+            <User className="w-6 h-6 text-secondary-foreground" />
           </div>
           <div>
-            <h2 className="font-semibold">{user ? user.name : 'Loading...'}</h2>
-            <p className="text-sm text-gray-500">{user ? user.email : 'Loading...'}</p>
+            <h2 className="font-semibold text-foreground">{user ? user.name : 'Loading...'}</h2>
+            <p className="text-sm text-muted-foreground">{user ? user.email : 'Loading...'}</p>
           </div>
         </div>
         <nav>
-          <Button variant="ghost" className="w-full justify-start mb-2">
+          <Button variant="ghost" className="w-full justify-start mb-2 text-foreground hover:bg-secondary hover:text-secondary-foreground">
             <Calendar className="mr-2 h-4 w-4" /> Calendar
           </Button>
           {/* Add more navigation items here */}
@@ -110,29 +110,31 @@ export default function UserDashboard() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 p-6 overflow-auto bg-background">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Your Calendar</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Your Calendar</h1>
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -7))}>
+            <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -7))}
+                    className="text-foreground border-border hover:bg-secondary">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="font-medium">
+            <span className="font-medium text-foreground">
               {format(startDate, "MMMM d, yyyy")} - {format(addDays(startDate, 6), "MMMM d, yyyy")}
             </span>
-            <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 7))}>
+            <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 7))}
+                    className="text-foreground border-border hover:bg-secondary">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" /> Add Event
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card">
               <DialogHeader>
-                <DialogTitle>Add New Event</DialogTitle>
+                <DialogTitle className="text-foreground">Add New Event</DialogTitle>
               </DialogHeader>
               <form
                 onSubmit={(e) => {
@@ -148,20 +150,20 @@ export default function UserDashboard() {
                 className="space-y-4"
               >
                 <div>
-                  <Label htmlFor="title">Event Title</Label>
-                  <Input id="title" name="title" required />
+                  <Label htmlFor="title" className="text-foreground">Event Title</Label>
+                  <Input id="title" name="title" required className="bg-input text-foreground" />
                 </div>
                 <div>
-                  <Label htmlFor="date">Date and Time</Label>
-                  <Input id="date" name="date" type="datetime-local" required />
+                  <Label htmlFor="date" className="text-foreground">Date and Time</Label>
+                  <Input id="date" name="date" type="datetime-local" required className="bg-input text-foreground" />
                 </div>
                 <div>
-                  <Label htmlFor="color">Color</Label>
+                  <Label htmlFor="color" className="text-foreground">Color</Label>
                   <Select name="color" defaultValue="bg-blue-500">
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-input text-foreground">
                       <SelectValue placeholder="Select a color" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card">
                       <SelectItem value="bg-blue-500">Blue</SelectItem>
                       <SelectItem value="bg-red-500">Red</SelectItem>
                       <SelectItem value="bg-green-500">Green</SelectItem>
@@ -170,7 +172,7 @@ export default function UserDashboard() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit">Add Event</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Add Event</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -179,9 +181,9 @@ export default function UserDashboard() {
         {/* Weekly Calendar */}
         <div className="grid grid-cols-7 gap-4">
           {weekDays.map((day) => (
-            <Card key={day.toISOString()} className="h-[calc(100vh-12rem)] overflow-hidden">
+            <Card key={day.toISOString()} className="h-[calc(100vh-12rem)] overflow-hidden bg-card">
               <CardContent className="p-4">
-                <h3 className="font-semibold mb-2">{format(day, "EEE d")}</h3>
+                <h3 className="font-semibold mb-2 text-foreground">{format(day, "EEE d")}</h3>
                 <div className="space-y-2">
                   {events
                     .filter((event) => event.date && isSameDay(event.date, day))

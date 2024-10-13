@@ -13,11 +13,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Calculate the start and end dates for last week
+    const today = new Date();
+    const lastWeekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+    const lastWeekEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+
     const response = await axios.get(
       'https://www.googleapis.com/calendar/v3/calendars/primary/events',
       {
         params: {
-          timeMin: new Date().toISOString(),
+          timeMin: lastWeekStart.toISOString(),
           maxResults: 2500,
           singleEvents: true,
           orderBy: 'startTime',
