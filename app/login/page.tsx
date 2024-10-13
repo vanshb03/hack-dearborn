@@ -12,7 +12,6 @@ const Login = () => {
   const [user, setUser] = useState<UserResponse>();
   const [error, setError] = useState('');
 
-
   const fetchUserData = async () => {
     const user: UserResponse = await supabase.auth.getUser();
     if (user) {
@@ -22,7 +21,6 @@ const Login = () => {
     }
   };
 
-  console.log(user, error)
   useEffect(() => {
     fetchUserData();
     supabase.auth.onAuthStateChange((event, session) => {
@@ -32,6 +30,7 @@ const Login = () => {
     });
 
   }, []);
+  console.log(user, error)
 
   const image = () => <Image 
       src={googleIcon}

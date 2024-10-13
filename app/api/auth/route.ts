@@ -10,6 +10,7 @@ export const POST = async () => {
     provider: 'google',
     options: {
       redirectTo: `${origin}`,  // Adjust redirect URL as needed
+      scopes: 'https://www.googleapis.com/auth/calendar'
     },
   });
 

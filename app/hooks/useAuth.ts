@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/supabaseClient';
+import { access } from 'fs';
+import { Session } from '@supabase/supabase-js';
 
 export function useAuth() {
   const [user, setUser] = useState<any>();
+  const [sessionData, setSessionData] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -14,6 +17,7 @@ export function useAuth() {
 
     const { data: {subscription} } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      setSessionData(() => session);
       if (!session) {
         router.push('/login');
       }
@@ -25,9 +29,7 @@ export function useAuth() {
     };
   }
   useEffect(() => {
-    // Check if a user is authenticated when the app loads
     checkAuth();
   }, [router]);
-
-  return { user, loading };
+  return { user, loading, access_token: sessionData?.access_token };
 }
