@@ -1,8 +1,14 @@
+import type { Metadata } from 'next'
 import { Manrope } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import './globals.css'
 
 import { ReactNode } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Calendar App - Manage Your Schedule',
+  description: 'A modern calendar application to manage your events and schedule with Google Calendar integration.',
+}
 
 const fontHeading = Manrope({
   subsets: ['latin'],
